@@ -2,6 +2,8 @@ package com.example.sean.datatracker;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
@@ -17,14 +19,18 @@ import android.widget.Toast;
 
 import com.parse.Parse;
 import com.parse.ParseAnalytics;
+import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String PREFS_NAME = "MyPrefsFile";
     private final static String TAG = MainActivity.class.getSimpleName();
+
     private ConnectivityManager connectivityManager;
     private NetworkInfo networkInfo;
     private Button networkButton;
@@ -47,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
     private long mobileTXBytesSinceReset;
     private long wifiRXBytesSinceReset;
     private long wifiTXBytesSinceReset;
+
+    ArrayList<String> networkSwitchedTimeStamp = new ArrayList<String>();
+
+    //interval in which data is submitted to server in hours
+    private static final int DATA_SUBMISSION_INTERVAL = 3;
 
     private final Runnable mRunnable = new Runnable() {
         public void run() {
@@ -73,11 +84,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //initializes Parse info
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, "d6YVgjwzKHAgiNRjhRhGxrsgHLuxl8RMk9UQHqsd", "2YLaPvkYszww0lz6YSRW91CLwFziRr2y3b4MQomy");
-        ParseAnalytics.trackAppOpenedInBackground(getIntent());
-
+        //checks to see if it is first time user is opening app
+        checkFirstLaunch();
         //initializes buttons and textfields
         setWidgets();
         //Since initially launching the app, this measures bytes since boot
@@ -85,28 +93,34 @@ public class MainActivity extends AppCompatActivity {
 
         displayBytes();
 
-        Map<String, String> dimensions = new HashMap<String, String>();
-// What type of news is this?
-        dimensions.put("category", "politics");
-// Is it a weekday or the weekend?
-        dimensions.put("dayType", "weekday");
-// Send the dimensions to Parse along with the 'read' event
-        ParseAnalytics.trackEventInBackground("read", dimensions);
-
-
         networkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 detectNetwork();
             }
         });
-
         mResetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 meausreBytesSinceDeviceBoot();
             }
         });
+    }
+
+    private void checkFirstLaunch() {
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (settings.getBoolean("my_first_time", true)) {
+            //the app is being launched for first time, do something
+            //start first launch activity
+            Intent userSignUpIntent = new Intent(this, SignUpActivity.class);
+            userSignUpIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            userSignUpIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(userSignUpIntent);
+        }
+
+
+        //}
+
     }
 
     private void setWidgets() {
@@ -178,5 +192,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        Intent intent;
+
+        if (id == R.id.personal_info) {
+            intent = new Intent(this, SignUpActivity.class);
+            startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }

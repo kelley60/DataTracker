@@ -1,0 +1,194 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.example.sean.datatracker.SignUpActivity"
+    android:background="#ff76ee00">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:id="@+id/submitButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="What is your..."
+        android:id="@+id/signUpHeader"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="#ff000000"
+        android:textSize="36sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Gender: "
+        android:id="@+id/genderText"
+        android:layout_below="@+id/signUpHeader"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:layout_marginTop="30dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Age:"
+        android:id="@+id/ageText"
+        android:textSize="24sp"
+        android:layout_below="@+id/genderText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data Plan:"
+        android:id="@+id/dataPlanText"
+        android:layout_below="@+id/ageText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Service Provider:"
+        android:id="@+id/serviceProviderText"
+        android:layout_below="@+id/dataPlanText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Phone Model:"
+        android:id="@+id/phoneModelText"
+        android:layout_below="@+id/serviceProviderText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data Usage"
+        android:id="@+id/dataUsagePart1"
+        android:layout_below="@+id/phoneModelText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="this Month:"
+        android:id="@+id/dataUsagePart2"
+        android:layout_below="@+id/dataUsagePart1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="24sp"
+        android:textColor="#ff000000" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@+id/signUpHeader"
+        android:layout_toRightOf="@+id/serviceProviderText"
+        android:layout_toEndOf="@+id/serviceProviderText"
+        android:layout_above="@+id/ageText"
+        android:id="@+id/radioGenderGroup"
+        android:layout_marginTop="30dp">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Male"
+            android:id="@+id/maleButton"
+            android:checked="false" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Female"
+            android:id="@+id/femaleButton"
+            android:checked="false" />
+    </RadioGroup>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/ageEditText"
+        android:layout_below="@+id/radioGenderGroup"
+        android:layout_toEndOf="@+id/dataUsagePart2"
+        android:layout_alignLeft="@+id/radioGenderGroup"
+        android:layout_alignStart="@+id/radioGenderGroup" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/dataPlanEditText"
+        android:layout_below="@+id/ageText"
+        android:layout_toRightOf="@+id/serviceProviderText"
+        android:layout_toEndOf="@+id/serviceProviderText"
+        android:hint="GB/month" />
+
+    <EditText
+        android:singleLine="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/serviceProviderEditText"
+        android:layout_below="@+id/dataPlanEditText"
+        android:layout_toRightOf="@+id/serviceProviderText"
+        android:layout_alignRight="@+id/dataPlanEditText"
+        android:layout_alignEnd="@+id/dataPlanEditText"
+        android:hint="Verizon, AT&amp;T..." />
+
+    <EditText
+        android:singleLine="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/phoneModelEditText"
+        android:layout_below="@+id/serviceProviderText"
+        android:layout_toRightOf="@+id/serviceProviderText"
+        android:layout_alignRight="@+id/serviceProviderEditText"
+        android:layout_alignEnd="@+id/serviceProviderEditText"
+        android:hint="Galaxy S5, Note 3..." />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:id="@+id/dataThisMonthEditText"
+        android:layout_alignBottom="@+id/dataUsagePart2"
+        android:layout_alignLeft="@+id/phoneModelEditText"
+        android:layout_alignStart="@+id/phoneModelEditText"
+        android:hint="GB" />
+
+
+</RelativeLayout>
