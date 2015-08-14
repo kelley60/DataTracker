@@ -1,14 +1,20 @@
 package com.example.sean.datatracker;
 
+import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +25,12 @@ import android.widget.Toast;
 
 import com.parse.Parse;
 import com.parse.ParseAnalytics;
+import com.parse.ParseException;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,10 +63,19 @@ public class MainActivity extends AppCompatActivity {
     private long wifiRXBytesSinceReset;
     private long wifiTXBytesSinceReset;
 
+    //values to be stored on phone and eventually transmitted to database
+    private long localMobileRCount;
+    private long localMobileTCount;
+    private long localWifiRCount;
+    private long localWifiTCount;
+
     ArrayList<String> networkSwitchedTimeStamp = new ArrayList<String>();
 
     //interval in which data is submitted to server in hours
     private static final int DATA_SUBMISSION_INTERVAL = 3;
+    private AlarmManager alarmManager;
+    private BroadcastReceiver broadcastReceiver;
+    private PendingIntent pendingIntent;
 
     private final Runnable mRunnable = new Runnable() {
         public void run() {
@@ -75,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             wifiReceivedTextView.setText("Received Bytes: " + Long.toString(wifiRXBytesSinceReset));
             wifiTransmittedTextView.setText("Transmitted Bytes: " + Long.toString(wifiTXBytesSinceReset));
 
-            mHandler.postDelayed(mRunnable, 3000);
+            mHandler.postDelayed(mRunnable, 15000);
         }
     };
 
@@ -85,29 +103,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //checks to see if it is first time user is opening app
-        checkFirstLaunch();
-        //initializes buttons and textfields
-        setWidgets();
-        //Since initially launching the app, this measures bytes since boot
-        meausreBytesSinceDeviceBoot();
 
-        displayBytes();
-
-        networkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                detectNetwork();
-            }
-        });
-        mResetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                meausreBytesSinceDeviceBoot();
-            }
-        });
-    }
-
-    private void checkFirstLaunch() {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         if (settings.getBoolean("my_first_time", true)) {
             //the app is being launched for first time, do something
@@ -117,10 +113,104 @@ public class MainActivity extends AppCompatActivity {
             userSignUpIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(userSignUpIntent);
         }
+        else {
+            //initializes buttons and textfields
+            setWidgets();
+
+            setTimer();
+            //Since initially launching the app, this measures bytes since boot
+            meausreBytesSinceDeviceBoot();
+
+            displayBytes();
+
+            networkButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    detectNetwork();
+                }
+            });
+            mResetButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    meausreBytesSinceDeviceBoot();
+                }
+            });
+        }
+    }
 
 
-        //}
+    private void setTimer() {
 
+       broadcastReceiver = new BroadcastReceiver() {
+           @Override
+           public void onReceive(Context context, Intent intent) {
+               sendData();
+           }
+       };
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(System.currentTimeMillis());
+
+        //starts at midnight
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+
+
+        //repeats every 3 hours
+       int interval = 1000 * 60 * 60 * 3;
+
+       registerReceiver(broadcastReceiver, new IntentFilter("com.example.sean.datatracker.MainActivity"));
+       pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent("com.example.sean.datatracker.MainActivity"), 0);
+
+       alarmManager = (AlarmManager)(this.getSystemService(Context.ALARM_SERVICE));
+       alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), interval, pendingIntent);
+
+    }
+
+    private void sendData() {
+        ParseUser user = ParseUser.getCurrentUser();
+
+        SharedPreferences sp = getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        localMobileRCount = sp.getLong("local_mobile_received", TrafficStats.getMobileRxBytes());
+        localMobileTCount = sp.getLong("local_mobile_transmitted", TrafficStats.getMobileTxBytes());
+        localWifiRCount = sp.getLong("local_wifi_received", TrafficStats.getTotalRxBytes() - TrafficStats.getMobileRxBytes());
+        localWifiTCount = sp.getLong("local_wifi_transmitted", TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes());
+
+        //mobile
+        int tempMR = (int)(TrafficStats.getMobileRxBytes() - localMobileRCount);
+        int tempMT = (int)(TrafficStats.getMobileTxBytes() - localMobileTCount);
+        //wifi
+        int tempWR = ((int)(TrafficStats.getTotalRxBytes() - localWifiRCount)) - tempMR;
+        int tempWT = ((int)(TrafficStats.getTotalTxBytes() - localWifiTCount)) - tempMT;
+
+        user.add("Mobile_Received", tempMR);
+        user.add("Mobile_Transmitted", tempMT);
+        user.add("WiFi_Received", tempWR);
+        user.add("WiFi_Transmited", tempWT);
+
+        editor.putLong("local_mobile_received", TrafficStats.getMobileRxBytes());
+        editor.putLong("local_mobile_transmitted", TrafficStats.getMobileTxBytes());
+        editor.putLong("local_wifi_received", TrafficStats.getTotalRxBytes() - TrafficStats.getMobileRxBytes());
+        editor.putLong("local_wifi_transmitted", TrafficStats.getTotalTxBytes() - TrafficStats.getMobileTxBytes());
+        editor.commit();
+
+        user.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null){
+                    Toast.makeText(MainActivity.this, "Data Submitted to backend.", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(e.getMessage());
+                    builder.setTitle("Oops!");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            }
+        });
     }
 
     private void setWidgets() {

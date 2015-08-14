@@ -125,20 +125,21 @@ public class SignUpActivity extends AppCompatActivity {
     private void finishSubmitting(ParseUser parseUser) {
         settings.edit().putBoolean("my_first_time", false).commit();
 
-        ParseUser mCurrentUser = ParseUser.getCurrentUser();
+        ParseUser mCurrentUser = parseUser;
 
         mCurrentUser.put("gender", mGender);
-        mCurrentUser.put("age", mAge);
-        mCurrentUser.put("dataPlan", mDataPlan);
+        mCurrentUser.put("age", Integer.parseInt(mAge));
+        mCurrentUser.put("dataPlan", Integer.parseInt(mDataPlan));
         mCurrentUser.put("serviceProvider", mServiceProvider);
         mCurrentUser.put("phoneModel", mPhoneModel);
-        mCurrentUser.put("dataThisMonth", mDataThisMonth);
+        mCurrentUser.put("dataThisMonth", Double.parseDouble(mDataThisMonth));
 
         mCurrentUser.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 if (e != null) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);
+
                     builder.setMessage(e.getMessage());
                     builder.setTitle("Oops!");
                     builder.setPositiveButton(android.R.string.ok, null);
