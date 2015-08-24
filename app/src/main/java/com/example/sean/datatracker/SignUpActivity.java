@@ -1,5 +1,6 @@
 package com.example.sean.datatracker;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,10 +15,13 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.parse.LogInCallback;
+import com.parse.Parse;
 import com.parse.ParseAnonymousUtils;
 import com.parse.ParseException;
+import com.parse.ParseSession;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.parse.SignUpCallback;
 
 
 public class SignUpActivity extends AppCompatActivity {
@@ -26,6 +30,7 @@ public class SignUpActivity extends AppCompatActivity {
     private static final int LOWER_AGE_LIMIT = 18;
 
     private Button mSubmitButton;
+    private final static String PREFS_NAME = "MyPrefsFile";
 
     private RadioGroup mGenderRadioGroup;
     private RadioButton mMaleButton;
@@ -108,12 +113,15 @@ public class SignUpActivity extends AppCompatActivity {
         //finishSubmitting is called in both logical outcomes because if not done so, will be called before
         //background call is complete
         if (settings.getBoolean("my_first_time", true)) {
-            ParseAnonymousUtils.logIn(new LogInCallback() {
+            final ParseUser newUser = new ParseUser();
+            int randUser = (int)(Math.random()*100000);
+            newUser.setUsername(randUser + "");
+            int randPass = (int)(Math.random()*100000);
+            newUser.setPassword(randPass + "");
+            newUser.signUpInBackground(new SignUpCallback() {
                 @Override
-                public void done(ParseUser parseUser, ParseException e) {
-                    if (e == null) {
-                        finishSubmitting(parseUser);
-                    }
+                public void done(ParseException e) {
+                    finishSubmitting(newUser);
                 }
             });
         }

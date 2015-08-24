@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Network State Permissions -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Wakelock Permission -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Alarm wake up Permission -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -26,6 +30,16 @@
             android:name=".SignUpActivity"
             android:label="@string/title_activity_sign_up" >
         </activity>
+
+        <receiver android:name="com.example.sean.datatracker.MyAlarmReceiver">
+            <intent-filter>
+                <action android:name="com.sample.myaction"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
